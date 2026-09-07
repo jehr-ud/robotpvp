@@ -13,16 +13,14 @@ import androidx.compose.ui.unit.sp
 import com.udistrital.robotpvp.enums.TypeScreen
 
 @Composable
-fun WelcomeScreen(currentScreen: TypeScreen){
+fun WelcomeScreen(clickGame: () -> Unit){
     var isToggled by rememberSaveable { mutableStateOf(false) }
 
     Column(){
         Text("Welcome to RobotPVP")
 
         Button(
-            onClick={
-
-            }
+            onClick=clickGame
         ) {
             Text("Play vs Machine")
         }

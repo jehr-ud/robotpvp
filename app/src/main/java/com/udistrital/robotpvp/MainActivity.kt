@@ -30,8 +30,11 @@ class MainActivity : ComponentActivity() {
 
                     var currentScreen by rememberSaveable { mutableStateOf(TypeScreen.WELCOME) }
 
+
                     if (currentScreen == TypeScreen.WELCOME) {
-                        WelcomeScreen(currentScreen)
+                        WelcomeScreen() {
+                            currentScreen = TypeScreen.GAME
+                        }
                     } else if (currentScreen == TypeScreen.GAME) {
                         GameScreen()
                     }
