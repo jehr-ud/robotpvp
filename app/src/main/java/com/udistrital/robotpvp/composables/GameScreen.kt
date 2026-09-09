@@ -14,10 +14,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,7 +35,6 @@ fun GameScreen() {
     // Estado del juego
     var isGameOver by remember { mutableStateOf(false) }
 
-
     var accelX by remember { mutableFloatStateOf(0f) }
     var accelY by remember { mutableFloatStateOf(0f) }
     var accelZ by remember { mutableFloatStateOf(0f) }
@@ -41,16 +43,16 @@ fun GameScreen() {
     var gyroY by remember { mutableFloatStateOf(0f) }
     var gyroZ by remember { mutableFloatStateOf(0f) }
 
-    // Estado físico del Robot 1
+    // Estado físico del Robot 1 (Jugador)
     var robot1Pos by remember { mutableStateOf(Offset(300f, 400f)) }
     var robot1VelX by remember { mutableFloatStateOf(0f) }
     var robot1VelY by remember { mutableFloatStateOf(0f) }
 
-    // Estado del Robot 2
+    // Estado del Robot 2 (Enemigo)
     var robot2Pos by remember { mutableStateOf(Offset(0f, 0f)) }
     var targetBorderPos by remember { mutableStateOf(Offset(0f, 0f)) }
 
-    // Configuración  Física
+    // Configuración Física
     val robotRadius = 60f
     val borderWidth = 20f
     val elasticity = 0.75f
@@ -116,8 +118,8 @@ fun GameScreen() {
 
         while (!isGameOver) {
             withFrameNanos {
-                // 1. Sensibilidad reducida para frenar la Bola Roja
-                val accelSensitivity = 0.15f // Reducido de 0.6f a 0.15f para menor velocidad
+                // 1. Sensibilidad para la Bola Roja
+                val accelSensitivity = 0.15f
                 robot1VelX += -accelX * accelSensitivity
                 robot1VelY += accelY * accelSensitivity
 
@@ -136,12 +138,11 @@ fun GameScreen() {
 
                 robot1Pos = Offset(nextX, nextY)
 
-                // 2. Movimiento de la Bola Azul a cualquier punto al azar de la pantalla
+                // 2. Movimiento de la Bola Azul a cualquier punto al azar
                 val dx = targetBorderPos.x - robot2Pos.x
                 val dy = targetBorderPos.y - robot2Pos.y
                 val distanceToTarget = hypot(dx, dy)
 
-                // Si llegó al destino actual, seleccionar un nuevo destino en cualquier parte de la pantalla
                 if (distanceToTarget < blueSpeed) {
                     robot2Pos = targetBorderPos
                     targetBorderPos = getRandomScreenPosition(minX, maxX, minY, maxY)
@@ -167,59 +168,99 @@ fun GameScreen() {
                 canvasSize = size
             }
 
-            // Fondo
-            drawRect(color = Color(0xFF202124), topLeft = Offset.Zero, size = size)
+            // 1. FONDO SCI-FI
+            val backgroundColor = Color(0xFF0B0F19)
+            drawRect(color = backgroundColor, topLeft = Offset.Zero, size = size)
 
-            // Borde / Paredes
+            // 2. CUADRÍCULA DE ARENA
+            val gridColor = Color(0xFF1E293B)
+            val gridSize = 100f
+            for (x in 0..(size.width / gridSize).toInt()) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x * gridSize, 0f),
+                    end = Offset(x * gridSize, size.height),
+                    strokeWidth = 2f
+                )
+            }
+            for (y in 0..(size.height / gridSize).toInt()) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(0f, y * gridSize),
+                    end = Offset(size.width, y * gridSize),
+                    strokeWidth = 2f
+                )
+            }
+
+            // 3. BORDE DE ARENA (Neón brillante)
             drawRect(
-                color = Color.White,
+                color = Color(0xFF38BDF8),
                 topLeft = Offset(borderWidth, borderWidth),
                 size = Size(size.width - (borderWidth * 2), size.height - (borderWidth * 2)),
-                style = Stroke(width = 5f)
+                style = Stroke(width = 8f)
             )
 
-            // Robot 1 (Rojo)
-            drawCircle(color = Color.Red, radius = robotRadius, center = robot1Pos)
-            drawCircle(color = Color.White, radius = robotRadius, center = robot1Pos, style = Stroke(width = 5f))
+            // Calculamos el tamaño total del robot a dibujar basado en tu radio de colisión
+            val robotSizePx = robotRadius * 2f
 
-            // Robot 2 (Azul)
-            drawCircle(color = Color.Cyan, radius = robotRadius, center = robot2Pos)
-            drawCircle(color = Color.White, radius = robotRadius, center = robot2Pos, style = Stroke(width = 5f))
+            // 4. Robot 1 (Jugador) - Color Verde Neón
+            drawRobot(
+                x = robot1Pos.x,
+                y = robot1Pos.y,
+                primaryColor = Color(0xFF10B981),
+                eyeColor = Color(0xFFA7F3D0),
+                sizePx = robotSizePx
+            )
+
+            // 5. Robot 2 (Enemigo) - Color Rojo Neón
+            drawRobot(
+                x = robot2Pos.x,
+                y = robot2Pos.y,
+                primaryColor = Color(0xFFEF4444),
+                eyeColor = Color(0xFFFECACA),
+                sizePx = robotSizePx
+            )
         }
 
-
+        // HUD - Telemetría
         Text(
             text = """
-                ACELERÓMETRO
+                SYS_ACCEL
                 X: %.2f | Y: %.2f | Z: %.2f
                 
-                VELOCIDAD ROJA
+                VELOCIDAD JUGADOR
                 Vx: %.1f | Vy: %.1f
             """.trimIndent().format(accelX, accelY, accelZ, robot1VelX, robot1VelY),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(28.dp),
-            color = Color.White,
+            color = Color(0xFF38BDF8), // Texto azul cibernético
             fontSize = 13.sp
         )
 
-
+        // Pantalla de Game Over
         if (isGameOver) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.8f)),
+                    .background(Color.Black.copy(alpha = 0.85f)),
                 contentAlignment = Alignment.Center
             ) {
                 androidx.compose.foundation.layout.Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "¡JUEGO TERMINADO!",
+                        text = "SISTEMA CRÍTICO", // Adaptado al tema sci-fi
                         color = Color.Red,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = "COLISIÓN DETECTADA",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(bottom = 24.dp)
                     )
                     Button(onClick = {
                         // Reiniciar Variables del Juego
@@ -227,12 +268,90 @@ fun GameScreen() {
                         robot1VelX = 0f
                         robot1VelY = 0f
                         robot2Pos = Offset(borderWidth + robotRadius, borderWidth + robotRadius)
+                        targetBorderPos = robot2Pos // Reset target
                         isGameOver = false
                     }) {
-                        Text(text = "Reiniciar Juego")
+                        Text(text = "REINICIAR SISTEMA")
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * Función auxiliar para dibujar un robot usando formas geométricas.
+ */
+fun DrawScope.drawRobot(x: Float, y: Float, primaryColor: Color, eyeColor: Color, sizePx: Float) {
+    val halfSize = sizePx / 2f
+    val trackWidth = sizePx * 0.2f
+
+    // Mueve el pincel al centro exacto
+    translate(left = x - halfSize, top = y - halfSize) {
+
+        // 1. Llantas (Grises)
+        drawRoundRect(
+            color = Color(0xFF334155),
+            topLeft = Offset(0f, sizePx * 0.2f),
+            size = Size(trackWidth, sizePx * 0.7f),
+            cornerRadius = CornerRadius(10f, 10f)
+        )
+        drawRoundRect(
+            color = Color(0xFF334155),
+            topLeft = Offset(sizePx - trackWidth, sizePx * 0.2f),
+            size = Size(trackWidth, sizePx * 0.7f),
+            cornerRadius = CornerRadius(10f, 10f)
+        )
+
+        // 2. Antena
+        drawLine(
+            color = Color.Gray,
+            start = Offset(sizePx / 2, 0f),
+            end = Offset(sizePx / 2, sizePx * 0.2f),
+            strokeWidth = 4f
+        )
+        drawCircle(
+            color = primaryColor,
+            radius = sizePx * 0.05f,
+            center = Offset(sizePx / 2, 0f)
+        )
+
+        // 3. Cuerpo principal
+        drawRoundRect(
+            color = primaryColor,
+            topLeft = Offset(sizePx * 0.15f, sizePx * 0.3f),
+            size = Size(sizePx * 0.7f, sizePx * 0.6f),
+            cornerRadius = CornerRadius(15f, 15f)
+        )
+
+        // 4. Cabeza / Pantalla
+        val headWidth = sizePx * 0.5f
+        drawRoundRect(
+            color = Color(0xFF1E293B), // Pantalla oscura
+            topLeft = Offset(sizePx / 2 - headWidth / 2, sizePx * 0.1f),
+            size = Size(headWidth, sizePx * 0.3f),
+            cornerRadius = CornerRadius(8f, 8f)
+        )
+
+        // 5. Ojos
+        val eyeRadius = sizePx * 0.06f
+        val eyeY = sizePx * 0.25f
+        drawCircle(
+            color = eyeColor,
+            radius = eyeRadius,
+            center = Offset(sizePx * 0.4f, eyeY)
+        )
+        drawCircle(
+            color = eyeColor,
+            radius = eyeRadius,
+            center = Offset(sizePx * 0.6f, eyeY)
+        )
+
+        // 6. Detalle del núcleo
+        drawCircle(
+            color = Color.White.copy(alpha = 0.5f),
+            radius = sizePx * 0.1f,
+            center = Offset(sizePx / 2, sizePx * 0.65f)
+        )
     }
 }
