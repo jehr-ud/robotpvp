@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.sp
 fun WelcomeScreen(clickGame: () -> Unit) {
     var isToggled by rememberSaveable { mutableStateOf(false) }
 
-    // Animación de escala para el ícono de información
     val scale by animateFloatAsState(
         targetValue = if (isToggled) 1.2f else 1f,
         animationSpec = tween(durationMillis = 300),
@@ -49,7 +48,7 @@ fun WelcomeScreen(clickGame: () -> Unit) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF1A1A2E) // Fondo oscuro elegante
+        color = Color(0xFF1A1A2E)
     ) {
         Column(
             modifier = Modifier
@@ -58,7 +57,7 @@ fun WelcomeScreen(clickGame: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Título principal con estilo
+
             Text(
                 text = " RobotPVP",
                 fontSize = 42.sp,
@@ -80,7 +79,7 @@ fun WelcomeScreen(clickGame: () -> Unit) {
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Botón "Play vs Machine" con estilo
+
             Button(
                 onClick = clickGame,
                 modifier = Modifier
@@ -102,7 +101,7 @@ fun WelcomeScreen(clickGame: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón "Play Online" con estilo secundario
+
             Button(
                 onClick = {},
                 modifier = Modifier
@@ -124,7 +123,6 @@ fun WelcomeScreen(clickGame: () -> Unit) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Botón de información con animación y tooltip visual
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
@@ -149,7 +147,6 @@ fun WelcomeScreen(clickGame: () -> Unit) {
                 }
             }
 
-            // Mostrar mensaje cuando se activa la información
             if (isToggled) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -163,7 +160,7 @@ fun WelcomeScreen(clickGame: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Versión pequeña
+
             Text(
                 text = "v1.0.0",
                 fontSize = 12.sp,
