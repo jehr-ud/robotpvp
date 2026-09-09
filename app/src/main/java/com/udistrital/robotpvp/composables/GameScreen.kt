@@ -5,7 +5,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -15,11 +15,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 @Composable
 fun GameScreen() {
-
     val context = LocalContext.current
 
     var accelX by remember { mutableFloatStateOf(0f) }
@@ -29,6 +32,16 @@ fun GameScreen() {
     var gyroX by remember { mutableFloatStateOf(0f) }
     var gyroY by remember { mutableFloatStateOf(0f) }
     var gyroZ by remember { mutableFloatStateOf(0f) }
+
+    var robot1X by remember { mutableFloatStateOf(250f) }
+    var robot1Y by remember { mutableFloatStateOf(400f) }
+
+    var robot2X by remember { mutableFloatStateOf(700f) }
+    var robot2Y by remember { mutableFloatStateOf(800f) }
+
+    val radiusDp = 40.dp
+    val density = LocalDensity.current
+    val radiusPx = with(density) { radiusDp.toPx() }
 
 
     val sensorManager = remember {
@@ -44,14 +57,12 @@ fun GameScreen() {
                 when (event.sensor.type) {
 
                     Sensor.TYPE_ACCELEROMETER -> {
-
                         accelX = event.values[0]
                         accelY = event.values[1]
                         accelZ = event.values[2]
                     }
 
                     Sensor.TYPE_GYROSCOPE -> {
-
                         gyroX = event.values[0]
                         gyroY = event.values[1]
                         gyroZ = event.values[2]
@@ -90,18 +101,33 @@ fun GameScreen() {
         }
     }
 
-
-    var robot1X by remember { mutableFloatStateOf(250f) }
-    var robot1Y by remember { mutableFloatStateOf(400f) }
-
-    var robot2X by remember { mutableFloatStateOf(700f) }
-    var robot2Y by remember { mutableFloatStateOf(800f) }
-
-
-
-    Box(
+    BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
     ) {
+
+        val widthPx = with(density) { maxWidth.toPx() }
+        val heightPx = with(density) { maxHeight.toPx() }
+
+        LaunchedEffect(widthPx, heightPx) {
+            while (true) {
+                withFrameNanos {
+
+                    val randomX = Random.nextDouble(
+                        from = radiusPx.toDouble(),
+                        until = (widthPx - radiusPx).toDouble()
+                    ).toFloat()
+
+                    // 2. Calcular y dentro de [radio, alto - radio]
+                    val randomY = Random.nextDouble(
+                        from = radiusPx.toDouble(),
+                        until = (heightPx - radiusPx).toDouble()
+                    ).toFloat()
+
+                    robot2X = randomX
+                    robot2Y = randomY
+                }
+            }
+        }
 
         Canvas(
             modifier = Modifier.fillMaxSize()
@@ -113,12 +139,11 @@ fun GameScreen() {
                 size = size
             )
 
-
             drawRect(
                 color = Color.White,
                 topLeft = Offset(
-                    20f,
-                    20f
+                    0f,
+                    0f
                 ),
                 size = androidx.compose.ui.geometry.Size(
                     size.width - 40f,
@@ -127,10 +152,10 @@ fun GameScreen() {
                 style = Stroke(width = 5f)
             )
 
-
+            // Robot 1
             drawCircle(
                 color = Color.Red,
-                radius = 60f,
+                radius = radiusPx,
                 center = Offset(
                     robot1X,
                     robot1Y
@@ -139,7 +164,7 @@ fun GameScreen() {
 
             drawCircle(
                 color = Color.White,
-                radius = 60f,
+                radius = radiusPx,
                 center = Offset(
                     robot1X,
                     robot1Y
@@ -147,7 +172,7 @@ fun GameScreen() {
                 style = Stroke(width = 5f)
             )
 
-
+            // Robot 2
             drawCircle(
                 color = Color.Cyan,
                 radius = 60f,
