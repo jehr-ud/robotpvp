@@ -4,16 +4,26 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -25,15 +35,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.udistrital.robotpvp.enums.GameWinner
+import java.util.Locale
+import kotlin.math.ceil
 import kotlin.math.hypot
 import kotlin.random.Random
 
 @Composable
-fun GameScreen() {
+fun GameScreen(
+    gameDurationSeconds: Float = 30f,
+    onBackToMenu: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     // Estado del juego
     var isGameOver by remember { mutableStateOf(false) }
+    var timeRemaining by remember(gameDurationSeconds) { mutableFloatStateOf(gameDurationSeconds) }
+    var winner by remember { mutableStateOf<GameWinner?>(null) }
 
     var accelX by remember { mutableFloatStateOf(0f) }
     var accelY by remember { mutableFloatStateOf(0f) }
@@ -101,7 +119,7 @@ fun GameScreen() {
         onDispose { sensorManager.unregisterListener(sensorListener) }
     }
 
-    // 2. Loop de Física
+    // Loop de Física y Temporizador
     LaunchedEffect(canvasSize, isGameOver) {
         if (canvasSize == Size.Zero || isGameOver) return@LaunchedEffect
 
@@ -116,8 +134,22 @@ fun GameScreen() {
             targetBorderPos = getRandomScreenPosition(minX, maxX, minY, maxY)
         }
 
+        var lastFrameTime = 0L
+
         while (!isGameOver) {
-            withFrameNanos {
+            withFrameNanos { frameTimeNanos ->
+                val dt = if (lastFrameTime == 0L) 0f else (frameTimeNanos - lastFrameTime) / 1_000_000_000f
+                lastFrameTime = frameTimeNanos
+
+                // Actualizar temporizador de 30s hacia atrás
+                timeRemaining = (timeRemaining - dt).coerceAtLeast(0f)
+
+                if (timeRemaining <= 0f) {
+                    winner = GameWinner.PLAYER
+                    isGameOver = true
+                    return@withFrameNanos
+                }
+
                 // 1. Sensibilidad para la Bola Roja
                 val accelSensitivity = 0.15f
                 robot1VelX += -accelX * accelSensitivity
@@ -155,13 +187,14 @@ fun GameScreen() {
                 // DETECCIÓN DE COLISIÓN ENTRE BOLAS
                 val distanceBetweenRobots = hypot(robot1Pos.x - robot2Pos.x, robot1Pos.y - robot2Pos.y)
                 if (distanceBetweenRobots <= robotRadius * 2) {
+                    winner = GameWinner.MACHINE
                     isGameOver = true
                 }
             }
         }
     }
 
-    // 3. Renderizado de la UI
+    // Renderizado de la UI
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             if (canvasSize != size) {
@@ -238,7 +271,53 @@ fun GameScreen() {
             fontSize = 13.sp
         )
 
-        // Pantalla de Game Over
+        // Temporizador en la parte inferior de la pantalla
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 28.dp)
+                .background(
+                    color = Color(0xFF1E293B).copy(alpha = 0.85f),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .border(
+                    width = 2.dp,
+                    color = if (timeRemaining <= 5f) Color(0xFFEF4444) else Color(0xFF38BDF8),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .padding(horizontal = 24.dp, vertical = 12.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "TIEMPO RESTANTE",
+                    color = Color(0xFF94A3B8),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                val seconds = ceil(timeRemaining).toInt().coerceAtLeast(0)
+                Text(
+                    text = String.format(Locale.US, "%02d s", seconds),
+                    color = if (timeRemaining <= 5f) Color(0xFFEF4444) else Color(0xFF38BDF8),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                LinearProgressIndicator(
+                    progress = { (timeRemaining / gameDurationSeconds).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .width(140.dp)
+                        .height(6.dp)
+                        .padding(top = 4.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = if (timeRemaining <= 5f) Color(0xFFEF4444) else Color(0xFF38BDF8),
+                    trackColor = Color(0xFF334155)
+                )
+            }
+        }
+
+        // Pantalla de Fin de Juego (Game Over / Victoria)
         if (isGameOver) {
             Box(
                 modifier = Modifier
@@ -246,32 +325,89 @@ fun GameScreen() {
                     .background(Color.Black.copy(alpha = 0.85f)),
                 contentAlignment = Alignment.Center
             ) {
-                androidx.compose.foundation.layout.Column(
+                Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "SISTEMA CRÍTICO", // Adaptado al tema sci-fi
-                        color = Color.Red,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(
-                        text = "COLISIÓN DETECTADA",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-                    Button(onClick = {
-                        // Reiniciar Variables del Juego
-                        robot1Pos = Offset(300f, 400f)
-                        robot1VelX = 0f
-                        robot1VelY = 0f
-                        robot2Pos = Offset(borderWidth + robotRadius, borderWidth + robotRadius)
-                        targetBorderPos = robot2Pos // Reset target
-                        isGameOver = false
-                    }) {
-                        Text(text = "REINICIAR SISTEMA")
+                    when (winner) {
+                        GameWinner.PLAYER -> {
+                            Text(
+                                text = "¡VICTORIA!",
+                                color = Color(0xFF10B981), // Verde Neón
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = "GANA EL JUGADOR",
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Text(
+                                text = "Sobreviviste los ${gameDurationSeconds.toInt()} segundos sin colisionar",
+                                color = Color(0xFF94A3B8),
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(bottom = 24.dp)
+                            )
+                        }
+                        GameWinner.MACHINE -> {
+                            Text(
+                                text = "¡DERROTA!",
+                                color = Color(0xFFEF4444), // Rojo Neón
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = "GANA LA MÁQUINA",
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Text(
+                                text = "Colisión detectada antes de agotar el tiempo",
+                                color = Color(0xFF94A3B8),
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(bottom = 24.dp)
+                            )
+                        }
+                        null -> {}
+                    }
+
+                    Button(
+                        onClick = {
+                            // Reiniciar Variables del Juego
+                            robot1Pos = Offset(300f, 400f)
+                            robot1VelX = 0f
+                            robot1VelY = 0f
+                            robot2Pos = Offset.Zero
+                            targetBorderPos = Offset.Zero
+                            timeRemaining = gameDurationSeconds
+                            winner = null
+                            isGameOver = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF38BDF8),
+                            contentColor = Color(0xFF0B0F19)
+                        ),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    ) {
+                        Text(
+                            text = "REINICIAR SISTEMA",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = onBackToMenu,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF94A3B8)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFF475569))
+                    ) {
+                        Text(text = "VOLVER AL MENÚ PRINCIPAL")
                     }
                 }
             }

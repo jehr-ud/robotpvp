@@ -2,12 +2,14 @@ package com.udistrital.robotpvp.composables
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,11 +17,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,15 +31,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.udistrital.robotpvp.enums.GameDifficulty
 
 @Composable
-fun WelcomeScreen(clickGame: () -> Unit) {
+fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit) {
     var isToggled by rememberSaveable { mutableStateOf(false) }
+    var showDifficultyDialog by rememberSaveable { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
         targetValue = if (isToggled) 1.2f else 1f,
@@ -81,7 +84,7 @@ fun WelcomeScreen(clickGame: () -> Unit) {
 
 
             Button(
-                onClick = clickGame,
+                onClick = { showDifficultyDialog = true },
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .height(56.dp),
@@ -168,5 +171,115 @@ fun WelcomeScreen(clickGame: () -> Unit) {
             )
         }
     }
-}
 
+    // Diálogo de Selección de Dificultad
+    if (showDifficultyDialog) {
+        Dialog(onDismissRequest = { showDifficultyDialog = false }) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color(0xFF1E293B),
+                border = BorderStroke(2.dp, Color(0xFF38BDF8)),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "SELECCIONA DIFICULTAD",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF38BDF8),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    Text(
+                        text = "Elige el tiempo de supervivencia para ganar:",
+                        fontSize = 13.sp,
+                        color = Color(0xFF94A3B8),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+
+                    // Botón Fácil (30s)
+                    Button(
+                        onClick = {
+                            showDifficultyDialog = false
+                            clickGame(GameDifficulty.EASY)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF10B981),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = "Fácil (30s)",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Botón Normal (45s)
+                    Button(
+                        onClick = {
+                            showDifficultyDialog = false
+                            clickGame(GameDifficulty.NORMAL)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF3B82F6),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = "Normal (45s)",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Botón Difícil (60s)
+                    Button(
+                        onClick = {
+                            showDifficultyDialog = false
+                            clickGame(GameDifficulty.HARD)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFEF4444),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = "Difícil (60s)",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    TextButton(onClick = { showDifficultyDialog = false }) {
+                        Text(
+                            text = "Cancelar",
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
