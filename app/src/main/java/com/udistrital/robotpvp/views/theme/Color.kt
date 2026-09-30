@@ -1,4 +1,4 @@
-package com.udistrital.robotpvp.ui.theme
+package com.udistrital.robotpvp.views.theme
 
 import androidx.compose.ui.graphics.Color
 

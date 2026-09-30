@@ -1,4 +1,4 @@
-package com.udistrital.robotpvp.composables
+package com.udistrital.robotpvp.views.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.udistrital.robotpvp.enums.GameDifficulty
+import com.udistrital.robotpvp.data.enums.GameDifficulty
 
 @Composable
 fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit) {

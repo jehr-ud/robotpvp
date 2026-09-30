@@ -1,4 +1,4 @@
-package com.udistrital.robotpvp.enums
+package com.udistrital.robotpvp.data.enums
 
 enum class GameDifficulty(val durationSeconds: Float) {
     EASY(30f),

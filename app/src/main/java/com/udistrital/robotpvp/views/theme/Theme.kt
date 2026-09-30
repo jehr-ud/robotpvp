@@ -1,6 +1,5 @@
-package com.udistrital.robotpvp.ui.theme
+package com.udistrital.robotpvp.views.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

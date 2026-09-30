@@ -1,4 +1,4 @@
-package com.udistrital.robotpvp
+package com.udistrital.robotpvp.views
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,16 +8,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.udistrital.robotpvp.composables.GameScreen
-import com.udistrital.robotpvp.composables.WelcomeScreen
-import com.udistrital.robotpvp.enums.GameDifficulty
-import com.udistrital.robotpvp.enums.TypeScreen
-import com.udistrital.robotpvp.ui.theme.RobotPVPTheme
+import com.udistrital.robotpvp.views.screens.GameScreen
+import com.udistrital.robotpvp.views.screens.WelcomeScreen
+import com.udistrital.robotpvp.data.enums.GameDifficulty
+import com.udistrital.robotpvp.data.enums.TypeScreen
+import com.udistrital.robotpvp.views.theme.RobotPVPTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.udistrital.robotpvp.composables
+package com.udistrital.robotpvp.views.screens
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -35,7 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.udistrital.robotpvp.enums.GameWinner
+import com.udistrital.robotpvp.data.enums.GameWinner
 import java.util.Locale
 import kotlin.math.ceil
 import kotlin.math.hypot
