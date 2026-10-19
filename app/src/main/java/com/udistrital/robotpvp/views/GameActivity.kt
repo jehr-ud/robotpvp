@@ -19,7 +19,7 @@ import com.udistrital.robotpvp.data.enums.GameDifficulty
 import com.udistrital.robotpvp.data.enums.TypeScreen
 import com.udistrital.robotpvp.views.theme.RobotPVPTheme
 
-class MainActivity : ComponentActivity() {
+class GameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
