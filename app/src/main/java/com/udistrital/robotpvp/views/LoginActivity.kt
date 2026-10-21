@@ -16,6 +16,14 @@ class LoginActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
     private val TAG = "log-UD"
 
+    public override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            goToGame()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         auth = Firebase.auth
         super.onCreate(savedInstanceState)
@@ -27,10 +35,7 @@ class LoginActivity : ComponentActivity() {
                         if (task.isSuccessful) {
 
                             Log.d(TAG, "signInWithEmail:success")
-
-                            val intent = Intent(this, GameActivity::class.java)
-                            startActivity(intent)
-
+                            goToGame()
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.exception)
                             Toast.makeText(
@@ -43,5 +48,10 @@ class LoginActivity : ComponentActivity() {
                     }
             } )
         }
+    }
+
+    fun goToGame(){
+        val intent = Intent(this, GameActivity::class.java)
+        startActivity(intent)
     }
 }
