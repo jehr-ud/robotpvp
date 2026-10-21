@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun LoginScreen(
-    onLoginClick: (email: String, pass: String) -> Unit = { _, _ -> }
+    onLoginClick: (email: String, pass: String) -> Unit
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -112,7 +112,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botón Autenticar
+
             Button(
                 onClick = { onLoginClick(email, password) },
                 modifier = Modifier
