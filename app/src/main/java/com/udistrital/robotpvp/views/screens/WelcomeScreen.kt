@@ -39,7 +39,7 @@ import androidx.compose.ui.window.Dialog
 import com.udistrital.robotpvp.data.enums.GameDifficulty
 
 @Composable
-fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit) {
+fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit, clickOnline: () -> Unit = {}) {
     var isToggled by rememberSaveable { mutableStateOf(false) }
     var showDifficultyDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -106,7 +106,7 @@ fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit) {
 
 
             Button(
-                onClick = {},
+                onClick = clickOnline,
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .height(56.dp),
