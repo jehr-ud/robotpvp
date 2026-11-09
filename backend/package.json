@@ -1,0 +1,15 @@
+{
+  "name": "api-score",
+  "version": "1.0.0",
+  "description": "api for scoring of game",
+  "license": "ISC",
+  "author": "jorge hernandez - UD",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
