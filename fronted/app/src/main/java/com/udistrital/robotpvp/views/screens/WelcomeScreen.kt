@@ -39,7 +39,11 @@ import androidx.compose.ui.window.Dialog
 import com.udistrital.robotpvp.data.enums.GameDifficulty
 
 @Composable
-fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit, clickOnline: () -> Unit = {}) {
+fun WelcomeScreen(
+    clickGame: (GameDifficulty) -> Unit,
+    clickOnline: () -> Unit = {},
+    clickStats: () -> Unit = {}
+) {
     var isToggled by rememberSaveable { mutableStateOf(false) }
     var showDifficultyDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -118,6 +122,27 @@ fun WelcomeScreen(clickGame: (GameDifficulty) -> Unit, clickOnline: () -> Unit =
             ) {
                 Text(
                     text = "Jugar Online",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 0.5.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = clickStats,
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2D2D44),
+                    contentColor = Color(0xFF38BDF8)
+                )
+            ) {
+                Text(
+                    text = "Mis estadísticas",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 0.5.sp
