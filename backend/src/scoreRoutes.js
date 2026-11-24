@@ -43,6 +43,20 @@ function createScoreRoutes(scoreRepository) {
     });
   });
 
+  // GET /v1/score/stats/user/:uid - victorias, derrotas y mejor puntaje
+  router.get('/stats/user/:uid', (req, res) => {
+    const { uid } = req.params;
+
+    const uidError = validateUid(uid);
+    if (uidError) return badRequest(res, uidError);
+
+    res.send({
+      status: 'ok',
+      message: `stats ok - data for: ${uid}`,
+      data: scoreRepository.getStats(uid)
+    });
+  });
+
   return router;
 }
 
