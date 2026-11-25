@@ -44,7 +44,8 @@ import kotlin.random.Random
 @Composable
 fun GameScreen(
     gameDurationSeconds: Float = 30f,
-    onBackToMenu: () -> Unit = {}
+    onBackToMenu: () -> Unit = {},
+    onGameFinished: (score: Int, playerWon: Boolean) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
 
@@ -117,6 +118,15 @@ fun GameScreen(
         gyroSensor?.let { sensorManager.registerListener(sensorListener, it, SensorManager.SENSOR_DELAY_GAME) }
 
         onDispose { sensorManager.unregisterListener(sensorListener) }
+    }
+
+    // Al terminar la partida se reporta el resultado.
+    // El puntaje son los segundos que sobrevivió el jugador (entero).
+    LaunchedEffect(isGameOver) {
+        if (isGameOver && winner != null) {
+            val secondsSurvived = (gameDurationSeconds - timeRemaining).toInt().coerceAtLeast(0)
+            onGameFinished(secondsSurvived, winner == GameWinner.PLAYER)
+        }
     }
 
     // Loop de Física y Temporizador

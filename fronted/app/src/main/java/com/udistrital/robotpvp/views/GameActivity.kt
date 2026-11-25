@@ -20,14 +20,17 @@ import androidx.compose.ui.Modifier
 import com.udistrital.robotpvp.data.enums.GameDifficulty
 import com.udistrital.robotpvp.data.enums.TypeScreen
 import com.udistrital.robotpvp.viewmodels.MatchViewModel
+import com.udistrital.robotpvp.viewmodels.StatsViewModel
 import com.udistrital.robotpvp.views.screens.GameScreen
 import com.udistrital.robotpvp.views.screens.OnlineScreen
+import com.udistrital.robotpvp.views.screens.StatsScreen
 import com.udistrital.robotpvp.views.screens.WaitingScreen
 import com.udistrital.robotpvp.views.screens.WelcomeScreen
 import com.udistrital.robotpvp.views.theme.RobotPVPTheme
 
 class GameActivity : ComponentActivity() {
     private val matchViewModel: MatchViewModel by viewModels()
+    private val statsViewModel: StatsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +82,8 @@ class GameActivity : ComponentActivity() {
                                     selectedDifficulty = difficulty
                                     currentScreen = TypeScreen.GAME
                                 },
-                                clickOnline = { currentScreen = TypeScreen.ONLINE }
+                                clickOnline = { currentScreen = TypeScreen.ONLINE },
+                                clickStats = { currentScreen = TypeScreen.STATS }
                             )
                         } else if (currentScreen == TypeScreen.ONLINE) {
                             OnlineScreen(
@@ -110,7 +114,15 @@ class GameActivity : ComponentActivity() {
                                 onBackToMenu = {
                                     matchViewModel.leaveMatch()
                                     currentScreen = TypeScreen.WELCOME
+                                },
+                                onGameFinished = { score, playerWon ->
+                                    statsViewModel.saveGame(score, playerWon)
                                 }
+                            )
+                        } else if (currentScreen == TypeScreen.STATS) {
+                            StatsScreen(
+                                statsViewModel = statsViewModel,
+                                onBack = { currentScreen = TypeScreen.WELCOME }
                             )
                         }
                     }
